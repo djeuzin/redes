@@ -2,8 +2,6 @@
 // LUCAS ALVES NASCIMENTO MARQUES RA: 163911
 // MARCELO DE CARVALHO MACHADO RA: 163934
 
-// ENTREGA PARCIAL
-
 #include <stdio.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -75,6 +73,12 @@ time_t get_file_mtime(const char *filename) {
     return 0;
 }
 
+size_t get_file_size(const char *filename) {
+    struct stat st;
+    if (stat(filename, &st) == 0) return st.st_size;
+    return 0;
+}
+
 void *handle_client(void *args) {
     int cfd = *(int *)args;
     // recv
@@ -99,6 +103,7 @@ void *handle_client(void *args) {
         if (parsed == 3) client_mtime = atol(extra);
 
         time_t server_mtime = get_file_mtime(filename);
+        int server_file_size = get_file_size(filename);
         if (server_mtime == 0) {
             status = 404;
             sprintf(resposta, "404 File Not Found\n");
@@ -108,7 +113,7 @@ void *handle_client(void *args) {
             sprintf(resposta, "304 Not Modified\n");
             send(cfd, resposta, strlen(resposta), 0);
         } else {
-            sprintf(resposta, "200 OK %ld\n", server_mtime);
+            sprintf(resposta, "200 OK %d\n", server_file_size);
             send(cfd, resposta, strlen(resposta), 0);
             send_file(cfd, filename);
         }
